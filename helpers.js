@@ -1,9 +1,10 @@
 const vertexShaderSource = `
     attribute vec4 a_Position;
     uniform vec4 u_Translation;
+    uniform mat4 u_scaleMatrix;
 
     void main() {
-        gl_Position = a_Position + u_Translation;
+        gl_Position = a_Position * u_scaleMatrix;
         gl_PointSize = 50.0;
     }
 `;

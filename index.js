@@ -2,10 +2,8 @@ console.log('Hello world!');
 
 const canvas = document.getElementById('webgl');
 
-console.log(canvas);
-
 canvas.width = window.innerWidth;
-canvas.height = 400; //window.innerHeight - 100;
+canvas.height = window.innerHeight - 100;
 
 const context = canvas.getContext('webgl', { antialias: true });
 
@@ -14,10 +12,59 @@ const program = initShaders(context);
 const a_Position = context.getAttribLocation(program, 'a_Position');
 const u_FragColor = context.getUniformLocation(program, 'u_FragColor');
 
+const grid = [
+    -1, -1, 1, -1,
+    -1, -0.9, 1, -0.9,
+    -1, -0.8, 1, -0.8,
+    -1, -0.7, 1, -0.7,
+    -1, -0.6, 1, -0.6,
+    -1, -0.5, 1, -0.5,
+    -1, -0.4, 1, -0.4,
+    -1, -0.3, 1, -0.3,
+    -1, -0.2, 1, -0.2,
+    -1, -0.1, 1, -0.1,
+    -1, 0, 1, 0,
+    -1, 0.1, 1, 0.1,
+    -1, 0.2, 1, 0.2,
+    -1, 0.3, 1, 0.3,
+    -1, 0.4, 1, 0.4,
+    -1, 0.5, 1, 0.5,
+    -1, 0.6, 1, 0.6,
+    -1, 0.7, 1, 0.7,
+    -1, 0.8, 1, 0.8,
+    -1, 0.9, 1, 0.9,
+    -1, 1, 1, 1,
+
+    -0.9, 1, -0.9, -1,
+    -0.8, 1, -0.8, -1,
+    -0.7, 1, -0.7, -1,
+    -0.6, 1, -0.6, -1,
+    -0.5, 1, -0.5, -1,
+    -0.4, 1, -0.4, -1,
+    -0.3, 1, -0.3, -1,
+    -0.2, 1, -0.2, -1,
+    -0.1, 1, -0.1, -1,
+    0, 1, 0, -1,
+    0.1, 1, 0.1, -1,
+    0.2, 1, 0.2, -1,
+    0.3, 1, 0.3, -1,
+    0.4, 1, 0.4, -1,
+    0.5, 1, 0.5, -1,
+    0.6, 1, 0.6, -1,
+    0.7, 1, 0.7, -1,
+    0.8, 1, 0.8, -1,
+    0.9, 1, 0.9, -1,
+    1, 1, 1, -1,
+];
+
 let vertices = [
     0.0, 0.0,
     0.75, 0.75
 ];
+
+vertices.unshift(...grid);
+
+
 
 const n = 3;
 
@@ -27,11 +74,25 @@ let tx = 0;
 let ty = 0;
 let tz = 0;
 
+const aspectRatio = canvas.width / canvas.height;
+
+console.log('aspect ratio is', aspectRatio);
+
+const scaleMatrix = new Float32Array([
+    1 / aspectRatio, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0
+]);
+
 const u_Translation = context.getUniformLocation(program, 'u_Translation');
+const u_aspectRadio = context.getUniformLocation(program, 'u_aspectRatio');
+const u_scaleMatrix = context.getUniformLocation(program, 'u_scaleMatrix');
 
 let homogeneousCoordinate = 0.0;
 
 context.uniform4f(u_Translation, tx, ty, tz, homogeneousCoordinate);
+context.uniformMatrix4fv(u_scaleMatrix, false, scaleMatrix);
 
 context.bindBuffer(context.ARRAY_BUFFER, vertexBuffer);
 context.bufferData(context.ARRAY_BUFFER, new Float32Array(vertices), context.STATIC_DRAW);
@@ -39,7 +100,7 @@ context.bufferData(context.ARRAY_BUFFER, new Float32Array(vertices), context.STA
 context.vertexAttribPointer(a_Position, 2, context.FLOAT, false, 0, 0);
 context.enableVertexAttribArray(a_Position);
 
-context.clearColor(0.0, 0.0, 0.0, 1.0);
+context.clearColor(0.2, 0.2, 0.2, 1.0);
 context.clear(context.COLOR_BUFFER_BIT);
 
 const draw = () => {
@@ -98,8 +159,6 @@ window.onclick = event => {
 };
 
 canvas.onmousemove = event => {
-    console.log(event);
-
     const dx = event.x - canvas.offsetLeft - quadrantWidth;
     const dy = event.y - canvas.offsetTop - quadrantHeight;
 
